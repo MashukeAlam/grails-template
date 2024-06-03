@@ -1,7 +1,7 @@
 package internals
 
 import (
-	"github.com/MashukeAlam/grails/handlers"
+	"github.com/MashukeAlam/grails-template/handlers"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
-	"github.com/MashukeAlam/grails/helpers"
+	"github.com/MashukeAlam/grails-template/helpers"
 )
 
 type ScaffoldData struct {
