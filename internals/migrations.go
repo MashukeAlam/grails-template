@@ -3,7 +3,7 @@ package internals
 
 import (
 	"gorm.io/gorm"
-	"github.com/MashukeAlam/grails-template"
+	"github.com/MashukeAlam/grails-template/models"
 )
 
 func Migrate(db *gorm.DB) {
