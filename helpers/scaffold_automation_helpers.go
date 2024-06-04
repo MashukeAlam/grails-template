@@ -366,15 +366,15 @@ func Destroy{{.ModelName}}(db *gorm.DB) fiber.Handler {
 
 	// Generate the route registration code for the model
 	routeRegistration := fmt.Sprintf(`
-// %s routes
-%s := app.Group("/%ss")
-%s.Get("/", handlers.Get%ss(dbGorm))
-%s.Get("/insert", handlers.Insert%s())
-%s.Post("/", handlers.Create%s(dbGorm))
-%s.Get("/:id/edit", handlers.Edit%s(dbGorm))
-%s.Put("/:id", handlers.Update%s(dbGorm))
-%s.Get("/:id/delete", handlers.Delete%s(dbGorm))
-%s.Delete("/:id", handlers.Destroy%s(dbGorm))
+	// %s routes
+	%s := app.Group("/%ss")
+	%s.Get("/", handlers.Get%ss(dbGorm))
+	%s.Get("/insert", handlers.Insert%s())
+	%s.Post("/", handlers.Create%s(dbGorm))
+	%s.Get("/:id/edit", handlers.Edit%s(dbGorm))
+	%s.Put("/:id", handlers.Update%s(dbGorm))
+	%s.Get("/:id/delete", handlers.Delete%s(dbGorm))
+	%s.Delete("/:id", handlers.Destroy%s(dbGorm))
 `, strings.Title(modelName), modelName, modelName, modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, modelName)
 
 	// Print the route registration code in yellow color
