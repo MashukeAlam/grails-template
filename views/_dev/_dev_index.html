@@ -13,12 +13,25 @@
                     <select x-model="field.type" required>
                         <option value="" disabled>Select Type</option>
                         <option value="string">VARCHAR(255)</option>
-                        <option value="text">TEXT</option>
+                        <option value="string">TEXT</option>
                         <option value="int">INT</option>
-                        <option value="time.Time">TIMESTAMP</option>
                         <option value="int">TINYINT(1)</option>
+                        <option value="int">SMALLINT</option>
+                        <option value="int">MEDIUMINT</option>
+                        <option value="int64">BIGINT</option>
+                        <option value="float32">FLOAT</option>
+                        <option value="float64">DOUBLE</option>
+                        <option value="*decimal.Decimal">DECIMAL</option>
+                        <option value="bool">BOOLEAN</option>
+                        <option value="time.Time">DATE</option>
+                        <option value="time.Time">DATETIME</option>
+                        <option value="time.Time">TIMESTAMP</option>
+                        <option value="time.Time">TIME</option>
+                        <option value="datatypes.JSON">JSON</option>
+                        <option value="[]byte">BLOB</option>
                         <!-- Add other types here -->
                     </select>
+                    
                     <button type="button" @click="removeField(index)">Remove</button>
                 </div>
             </template>
