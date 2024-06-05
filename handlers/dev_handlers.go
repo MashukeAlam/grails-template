@@ -22,6 +22,17 @@ func GetDevView() fiber.Handler {
 	}
 }
 
+func GetMigration(db *gorm.DB) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		helpers.Migrate(db)
+		return c.JSON(fiber.Map{
+			"message": "Migration done.",
+			"action": "show_link",
+			"": "",
+		})
+	}
+}
+
 
 
 func ProcessIncomingScaffoldData(db *gorm.DB) fiber.Handler {

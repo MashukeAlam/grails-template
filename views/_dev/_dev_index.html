@@ -31,7 +31,7 @@
                         <option value="[]byte">BLOB</option>
                         <!-- Add other types here -->
                     </select>
-                    
+
                     <button type="button" @click="removeField(index)">Remove</button>
                 </div>
             </template>
@@ -43,6 +43,9 @@
         </div>
         <div>
             <button type="submit">Create Scaffold</button>
+        </div>
+        <div id="migration">
+
         </div>
     </form>
 </div>
@@ -84,6 +87,15 @@
                     const result = await response.json();
                     console.log('Success:', result);
                     // Handle success - redirect or show a success message
+                    if (result.action === 'migrate' && result.actionParam) {
+                        const migrationDiv = document.querySelector('#migration');
+                        const button = document.createElement('button');
+                        button.textContent = `Migrate ${response.actionParam} table!`;
+                        button.setAttribute('hx-get', '/dev/migrate');
+                        button.setAttribute('hx-trigger', 'click');
+                        migrationDiv.innerHTML = ''; // TODO: fix this!
+                        migrationDiv.appendChild(button);
+                    }
                 } catch (error) {
                     console.error('Error:', error);
                     // Handle error - show an error message
