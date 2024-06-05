@@ -12,7 +12,7 @@ func SetupRoutes(app *fiber.App, dbGorm *gorm.DB) {
 		// Pass the title to the template
 		return c.Render("index", fiber.Map{
 			"Title": "Hello, Fiber with Slim!",
-		}, "layouts/main")
+		})
 	})
 
 	// Dev routes
