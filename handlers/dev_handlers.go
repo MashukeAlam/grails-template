@@ -25,15 +25,11 @@ func GetDevView() fiber.Handler {
 func GetMigration(db *gorm.DB) fiber.Handler {
 	return func(c *fiber.Ctx) error {
 		helpers.Migrate(db)
-		return c.JSON(fiber.Map{
-			"message": "Migration done.",
-			"action": "show_link",
-			"": "",
-		})
+		return c.Render("_dev/_dev_index", fiber.Map{
+			"Title": "Everything Center",
+		}, "layouts/main")
 	}
 }
-
-
 
 func ProcessIncomingScaffoldData(db *gorm.DB) fiber.Handler {
 	return func(c *fiber.Ctx) error {
@@ -66,6 +62,8 @@ func ProcessIncomingScaffoldData(db *gorm.DB) fiber.Handler {
 		}
 		return c.JSON(fiber.Map{
 			"message": "Scaffold created successfully",
+			"action": "migrate",
+			"actionParam": data.ScaffoldData.TableName,
 		})
 	}
 }
