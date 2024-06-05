@@ -20,15 +20,11 @@ func CreateModel(tableName string, fields []Field, reference ...string) {
 	modelContent := generateModelContent(modelName, fields, reference...)
 	modelFileName := filepath.Join(modelDir, fmt.Sprintf("%s.go", tableName))
 	writeToFile(modelFileName, modelContent)
-	fmt.Printf("Model file %s created successfully.\n", modelFileName)
 
+	fmt.Printf("%s%sUPDATING%s\tmigrations.go\tfor %s\n", Bold, Yellow, Reset, modelName)
 	appendMigrationCode(modelName)
-
-	// TODO: autoMigrate here gorm model.
-	fmt.Printf("%s\n\n\ndbGorm.AutoMigrate(&models.%s{})%s\n\n\n", Green, modelName, Reset)
-
+	fmt.Printf("%s%sGENERATING%s\thandlers\tfor %s\n", Bold, Yellow, Reset, modelName)
 	generateHandlerFile(modelName)
-
 	generateAndWriteViewFiles(tableName, fields)
 }
 
@@ -49,6 +45,9 @@ func generateModelContent(modelName string, fields []Field, reference ...string)
 	}
 	modelBuilder.WriteString("}\n")
 
+	fmt.Printf("%s%sUPDATE%s\tmodels.go\tfor %s\n", Bold, Yellow, Reset, modelName)
+
+
 	return modelBuilder.String()
 }
 
@@ -59,7 +58,7 @@ func writeToFile(filename, content string) {
 }
 
 func appendMigrationCode(modelName string) {
-	migrationFileName := "internals/migrations.go"
+	migrationFileName := "helpers/migrations.go"
 	migrationFunction := `package internals
 
 import (
@@ -74,7 +73,6 @@ func Migrate(db *gorm.DB) {
 	if _, err := os.Stat(migrationFileName); os.IsNotExist(err) {
 		content := migrationFunction + migrationCode + "}\n"
 		writeToFile(migrationFileName, content)
-		fmt.Printf("Migration file %s created successfully.\n", migrationFileName)
 	} else {
 		content, err := os.ReadFile(migrationFileName)
 		if err != nil {
@@ -84,7 +82,7 @@ func Migrate(db *gorm.DB) {
 		contentStr := string(content)
 		contentStr = strings.TrimSuffix(contentStr, "}\n") + "\n" + migrationCode + "}\n"
 		writeToFile(migrationFileName, contentStr)
-		fmt.Printf("Migration for %s appended to %s successfully.\n", modelName, migrationFileName)
+		fmt.Printf("%s%sUPDATE%s\tmigrations.go\tfor %s\n", Bold, Yellow, Reset, modelName)
 	}
 }
 
@@ -106,6 +104,7 @@ func appendRoutesCode(codeToAdd string) error {
 	idx := strings.LastIndex(fileContent, "}")
 
 	newContent := fileContent[:idx] + codeToAdd + "\n}" + fileContent[idx+1:]
+	fmt.Printf("%s%sUPDATED%s\troutes.go\n", Bold, Green, Reset)
 	return ioutil.WriteFile(filePath, []byte(newContent), 0644)
 }
 
@@ -116,6 +115,7 @@ func generateAndWriteViewFiles(tableName string, fields []Field) {
 	if err := os.MkdirAll(viewDir, os.ModePerm); err != nil {
 		log.Fatalf("Failed to create views directory: %v", err)
 	}
+	fmt.Printf("%s%sTRYING%s\tviews\tfor %s\n", Bold, Yellow, Reset, tableName)
 
 	indexViewContent := generateIndexViewContent(tableName, fields)
 	indexViewFileName := filepath.Join(viewDir, "index.html")
@@ -147,6 +147,8 @@ func generateIndexViewContent(tableName string, fields []Field) string {
         <td>{{.CreatedAt}}</td>
     </tr>{{end}}`, strings.ToLower(tableName), strings.ToLower(tableName)))
 
+	fmt.Printf("%s%sGENERATED%s\tindex.html\tfor %s\n", Bold, Green, Reset, tableName)
+
 	return fmt.Sprintf(`
     <h2>All %s</h2>
     <a href="/%ss/insert">Add +</a>
@@ -167,6 +169,8 @@ func generateInsertViewContent(tableName string, fields []Field) string {
             <input type="%s" id="%s" name="%s" required>
         `, field.Name, field.Name, field.Type, field.Name, field.Name))
 	}
+
+	fmt.Printf("%s%sGENERATED%s\tinsert.html\tfor %s\n", Bold, Green, Reset, tableName)
 
 	return fmt.Sprintf(`
     <h2>Add %s</h2>
@@ -336,10 +340,8 @@ func Destroy{{.ModelName}}(db *gorm.DB) fiber.Handler {
 	%s.Delete("/:id", handlers.Destroy%s(dbGorm))
 `, strings.Title(modelName), modelName, modelName, modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, modelName)
 
-	fmt.Println("\033[33m" + routeRegistration + "\033[0m")
-
 	if err := appendRoutesCode(routeRegistration); err != nil {
 		log.Fatalf("Failed to append routes code: %v", err)
 	}
-	fmt.Printf("Handler file %s created successfully.\n", handlerFileName)
+	fmt.Printf("%s%sGENERATED%s\t%shandlers.go\tfor %s\n", Bold, Green, Reset,modelName, modelName)
 }

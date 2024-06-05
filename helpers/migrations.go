@@ -1,5 +1,5 @@
 // Package internals Never TOUCH this file please.
-package internals
+package helpers
 
 import (
 	"gorm.io/gorm"

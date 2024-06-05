@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/MashukeAlam/grails-template/internals"
+	"github.com/MashukeAlam/grails-template/helpers"
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/template/html/v2"
@@ -89,7 +90,7 @@ func main() {
 	if len(os.Args) > 1 {
 		// Check for migration command
 		if os.Args[1] == "migrate" {
-			internals.Migrate(dbGorm) // Run the migrate function with the direction
+			helpers.Migrate(dbGorm) // Run the migrate function with the direction
 			return
 		} else {
 			log.Println("For Migration, please type: go run app.go migrate")

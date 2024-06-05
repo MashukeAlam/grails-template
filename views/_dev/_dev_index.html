@@ -31,7 +31,7 @@
                         <option value="[]byte">BLOB</option>
                         <!-- Add other types here -->
                     </select>
-                    
+
                     <button type="button" @click="removeField(index)">Remove</button>
                 </div>
             </template>
@@ -44,7 +44,11 @@
         <div>
             <button type="submit">Create Scaffold</button>
         </div>
+        
     </form>
+    <div id="migration">
+
+    </div>
 </div>
 
 <script>
@@ -84,6 +88,14 @@
                     const result = await response.json();
                     console.log('Success:', result);
                     // Handle success - redirect or show a success message
+                    if (result.action === 'migrate' && result.actionParam) {
+                        const migrationDiv = document.getElementById("migration");
+                        migrationDiv.innerHTML = `
+                            <form action='/dev/migrate' method='GET'>
+                                <button type='submit'>Migrate ${result.actionParam}</button>    
+                            </form>
+                        `
+                    }
                 } catch (error) {
                     console.error('Error:', error);
                     // Handle error - show an error message

@@ -18,5 +18,6 @@ func SetupRoutes(app *fiber.App, dbGorm *gorm.DB) {
 	// Dev routes
 	Dev := app.Group("/dev")
 	Dev.Get("/", handlers.GetDevView())
+	Dev.Get("/migrate", handlers.GetMigration(dbGorm))
 	Dev.Post("/", handlers.ProcessIncomingScaffoldData(dbGorm))
 }
