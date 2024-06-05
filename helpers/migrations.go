@@ -1,4 +1,4 @@
-// Package internals Never TOUCH this file please.
+// Package helpers Never TOUCH this file please.
 package helpers
 
 import (
