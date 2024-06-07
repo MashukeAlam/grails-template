@@ -26,6 +26,34 @@ func CreateModel(tableName string, fields []Field, reference ...string) {
 	fmt.Printf("%s%sGENERATING%s\thandlers\n", Bold, Yellow, Reset)
 	generateHandlerFile(modelName)
 	generateAndWriteViewFiles(tableName, fields)
+	appendModelToList(modelName)
+}
+
+func appendModelToList(modelName string) {
+	miscHelpersFile := "helpers/misc_helpers.go"
+	content, err := ioutil.ReadFile(miscHelpersFile)
+	if err != nil {
+		log.Fatalf("Failed to read misc_helpers.go: %v", err)
+	}
+
+	modelImport := fmt.Sprintf("\"%s/models\"\n", os.Getenv("PROJECT_NAME"))
+	modelListEntry := fmt.Sprintf("models_list = append(models_list, models.%s{})\n", modelName)
+
+	contentStr := string(content)
+	if !strings.Contains(contentStr, modelImport) {
+		contentStr = strings.Replace(contentStr, "import (", "import (\n\t"+modelImport, 1)
+	}
+
+	if !strings.Contains(contentStr, modelListEntry) {
+		contentStr = strings.Replace(contentStr, "var models_list []interface{}", "var models_list []interface{}\n\nfunc init() {\n\t"+modelListEntry+"\n}", 1)
+	} else {
+		contentStr = strings.Replace(contentStr, "func init() {", "func init() {\n\t"+modelListEntry, 1)
+	}
+
+	if err := ioutil.WriteFile(miscHelpersFile, []byte(contentStr), 0644); err != nil {
+		log.Fatalf("Failed to write to misc_helpers.go: %v", err)
+	}
+	fmt.Printf("%s%sUPDATE%s\tmisc_helpers.go\t\n", Bold, Yellow, Reset)
 }
 
 func generateModelContent(modelName string, fields []Field, reference ...string) string {
