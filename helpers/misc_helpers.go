@@ -1,7 +1,6 @@
 package helpers
 
 import (
-	"github.com/MashukeAlam/grails-template/models"
 	"regexp"
 	"strings"
 )
@@ -10,8 +9,6 @@ type Field struct {
 	Name string `json:"name"`
 	Type string `json:"type"`
 }
-
-var models_list []interface{}
 
 func ToGoType(sqlType string) string {
 	// Regular expression to match SQL types with optional length or precision
@@ -40,8 +37,4 @@ func ToGoType(sqlType string) string {
 	default:
 		return "string"
 	}
-}
-
-func init() {
-	models_list = append(models_list, models.User{})
 }
