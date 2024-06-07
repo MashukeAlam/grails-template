@@ -2,12 +2,12 @@ package helpers
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
-	"io/ioutil"
 )
 
 func CreateModel(tableName string, fields []Field, reference ...string) {
@@ -21,9 +21,9 @@ func CreateModel(tableName string, fields []Field, reference ...string) {
 	modelFileName := filepath.Join(modelDir, fmt.Sprintf("%s.go", tableName))
 	writeToFile(modelFileName, modelContent)
 
-	fmt.Printf("%s%sUPDATING%s\tmigrations.go\tfor %s\n", Bold, Yellow, Reset, modelName)
+	fmt.Printf("%s%sUPDATING%s\tmigrations.go\n", Bold, Yellow, Reset)
 	appendMigrationCode(modelName)
-	fmt.Printf("%s%sGENERATING%s\thandlers\tfor %s\n", Bold, Yellow, Reset, modelName)
+	fmt.Printf("%s%sGENERATING%s\thandlers\n", Bold, Yellow, Reset)
 	generateHandlerFile(modelName)
 	generateAndWriteViewFiles(tableName, fields)
 }
@@ -45,8 +45,7 @@ func generateModelContent(modelName string, fields []Field, reference ...string)
 	}
 	modelBuilder.WriteString("}\n")
 
-	fmt.Printf("%s%sUPDATE%s\tmodels.go\tfor %s\n", Bold, Yellow, Reset, modelName)
-
+	fmt.Printf("%s%sUPDATE%s\tmodels.go\t\n", Bold, Yellow, Reset)
 
 	return modelBuilder.String()
 }
@@ -82,7 +81,7 @@ func Migrate(db *gorm.DB) {
 		contentStr := string(content)
 		contentStr = strings.TrimSuffix(contentStr, "}\n") + "\n" + migrationCode + "}\n"
 		writeToFile(migrationFileName, contentStr)
-		fmt.Printf("%s%sUPDATE%s\tmigrations.go\tfor %s\n", Bold, Yellow, Reset, modelName)
+		fmt.Printf("%s%sUPDATE%s\tmigrations.go\t\n", Bold, Yellow, Reset)
 	}
 }
 
@@ -115,7 +114,7 @@ func generateAndWriteViewFiles(tableName string, fields []Field) {
 	if err := os.MkdirAll(viewDir, os.ModePerm); err != nil {
 		log.Fatalf("Failed to create views directory: %v", err)
 	}
-	fmt.Printf("%s%sTRYING%s\tviews\tfor %s\n", Bold, Yellow, Reset, tableName)
+	fmt.Printf("%s%sTRYING%s\tviews\t\n", Bold, Yellow, Reset)
 
 	indexViewContent := generateIndexViewContent(tableName, fields)
 	indexViewFileName := filepath.Join(viewDir, "index.html")
@@ -147,7 +146,7 @@ func generateIndexViewContent(tableName string, fields []Field) string {
         <td>{{.CreatedAt}}</td>
     </tr>{{end}}`, strings.ToLower(tableName), strings.ToLower(tableName)))
 
-	fmt.Printf("%s%sGENERATED%s\tindex.html\tfor %s\n", Bold, Green, Reset, tableName)
+	fmt.Printf("%s%sGENERATED%s\tindex.html\n", Bold, Green, Reset)
 
 	return fmt.Sprintf(`
     <h2>All %s</h2>
@@ -170,7 +169,7 @@ func generateInsertViewContent(tableName string, fields []Field) string {
         `, field.Name, field.Name, field.Type, field.Name, field.Name))
 	}
 
-	fmt.Printf("%s%sGENERATED%s\tinsert.html\tfor %s\n", Bold, Green, Reset, tableName)
+	fmt.Printf("%s%sGENERATED%s\tinsert.html\n", Bold, Green, Reset)
 
 	return fmt.Sprintf(`
     <h2>Add %s</h2>
@@ -343,5 +342,5 @@ func Destroy{{.ModelName}}(db *gorm.DB) fiber.Handler {
 	if err := appendRoutesCode(routeRegistration); err != nil {
 		log.Fatalf("Failed to append routes code: %v", err)
 	}
-	fmt.Printf("%s%sGENERATED%s\t%shandlers.go\tfor %s\n", Bold, Green, Reset,modelName, modelName)
+	fmt.Printf("%s%sGENERATED%s\t%shandlers.go\n", Bold, Green, Reset, modelName)
 }
