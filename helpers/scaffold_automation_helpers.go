@@ -147,6 +147,18 @@ func generateAndWriteViewFiles(tableName string, fields []Field) {
 	insertViewContent := generateInsertViewContent(tableName, fields)
 	insertViewFileName := filepath.Join(viewDir, "insert.html")
 	writeToFile(insertViewFileName, insertViewContent)
+
+	showViewContent := generateShowViewContent(tableName, fields)
+	showViewFileName := filepath.Join(viewDir, "show.html")
+	writeToFile(showViewFileName, showViewContent)
+
+	editViewContent := generateEditViewContent(tableName, fields)
+	editViewFileName := filepath.Join(viewDir, "edit.html")
+	writeToFile(editViewFileName, editViewContent)
+
+	deleteViewContent := generateDeleteViewContent(tableName, fields)
+	deleteViewFileName := filepath.Join(viewDir, "delete.html")
+	writeToFile(deleteViewFileName, deleteViewContent)
 }
 
 func generateIndexViewContent(tableName string, fields []Field) string {
@@ -200,6 +212,67 @@ func generateInsertViewContent(tableName string, fields []Field) string {
         <button type="submit">Add %s</button>
     </form>
     `, tableName, tableName, formFields.String(), tableName)
+}
+
+func generateShowViewContent(tableName string, fields []Field) string {
+	var tableRows strings.Builder
+
+	for _, field := range fields {
+		tableRows.WriteString(fmt.Sprintf("<tr><th>%s</th><td>{{.%s}}</td></tr>", field.Name, ToCamelCase(field.Name)))
+	}
+
+	fmt.Printf("%s%sGENERATED%s\tshow.html\n", Bold, Green, Reset)
+
+	return fmt.Sprintf(`
+    <h2>Show %s</h2>
+    <table>
+        <tbody>%s</tbody>
+    </table>
+    <a href="/%ss">Back</a>
+    `, tableName, tableRows.String(), tableName)
+}
+
+func generateEditViewContent(tableName string, fields []Field) string {
+	var formFields strings.Builder
+	for _, field := range fields {
+		formFields.WriteString(fmt.Sprintf(`
+            <label for="%s">%s:</label>
+            <input type="text" id="%s" name="%s" value="{{.%s}}" required>
+        `, field.Name, field.Name, field.Name, field.Name, ToCamelCase(field.Name)))
+	}
+
+	fmt.Printf("%s%sGENERATED%s\tedit.html\n", Bold, Green, Reset)
+
+	return fmt.Sprintf(`
+    <h2>Edit %s</h2>
+    <form action="/%ss/{{.ID}}" method="POST">
+        <input type="hidden" name="_method" value="PUT">
+        %s
+        <button type="submit">Update %s</button>
+    </form>
+    `, tableName, tableName, formFields.String(), tableName)
+}
+
+func generateDeleteViewContent(tableName string, fields []Field) string {
+	var tableRows strings.Builder
+
+	for _, field := range fields {
+		tableRows.WriteString(fmt.Sprintf("<tr><th>%s</th><td>{{.%s}}</td></tr>", field.Name, ToCamelCase(field.Name)))
+	}
+
+	fmt.Printf("%s%sGENERATED%s\tdelete.html\n", Bold, Green, Reset)
+
+	return fmt.Sprintf(`
+    <h2>Delete %s</h2>
+    <table>
+        <tbody>%s</tbody>
+    </table>
+    <form action="/%ss/{{.ID}}" method="POST">
+        <input type="hidden" name="_method" value="DELETE">
+        <button type="submit">Delete</button>
+    </form>
+    <a href="/%ss">Back</a>
+    `, tableName, tableRows.String(), tableName, tableName)
 }
 
 func generateHandlerFile(modelName string) {
