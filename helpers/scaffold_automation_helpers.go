@@ -200,7 +200,7 @@ func generateInsertViewContent(tableName string, fields []Field) string {
 		formFields.WriteString(fmt.Sprintf(`
             <label for="%s">%s:</label>
             <input type="%s" id="%s" name="%s" required>
-        `, field.Name, field.Name, field.Type, field.Name, field.Name))
+        `, field.Name, field.Name, GetHTMLInputType(field.Type), field.Name, field.Name))
 	}
 
 	fmt.Printf("%s%sGENERATED%s\tinsert.html\n", Bold, Green, Reset)
@@ -237,8 +237,8 @@ func generateEditViewContent(tableName string, fields []Field) string {
 	for _, field := range fields {
 		formFields.WriteString(fmt.Sprintf(`
             <label for="%s">%s:</label>
-            <input type="text" id="%s" name="%s" value="{{%s.%s}}" required>
-        `, field.Name, field.Name, field.Name, field.Name, strings.ToLower(tableName), ToCamelCase(field.Name)))
+            <input type="%s" id="%s" name="%s" value="{{.%s.%s}}" required>
+        `, field.Name, field.Name, GetHTMLInputType(field.Type), field.Name, field.Name, strings.ToLower(tableName), ToCamelCase(field.Name)))
 	}
 
 	fmt.Printf("%s%sGENERATED%s\tedit.html\n", Bold, Green, Reset)
@@ -256,10 +256,19 @@ func generateEditViewContent(tableName string, fields []Field) string {
             const form = event.target;
             const data = new FormData(form);
             const jsonData = {};
-            data.forEach((value, key) => { jsonData[key] = value });
+			
+			Array.from(form.elements).forEach(input => {
+                if (input.name) {
+                    if (input.type === 'number') {
+                        jsonData[input.name] = parseInt(input.value, 10);
+                    } else {
+                        jsonData[input.name] = input.value;
+                    }
+                }
+            });
 
             try {
-                const response = await fetch('/%ss/{{%s.ID}}', {
+                const response = await fetch('/%ss/{{.%s.ID}}', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -311,7 +320,7 @@ func generateDeleteViewContent(tableName string, fields []Field) string {
             }
 
             try {
-                const response = await fetch('/%ss/{{%s.ID}}', {
+                const response = await fetch('/%ss/{{.%s.ID}}', {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json'
@@ -431,7 +440,7 @@ func Update{{.ModelName}}(db *gorm.DB) fiber.Handler {
 				"error": "Failed to update {{.ModelName}}",
 			})
 		}
-		return c.Redirect("/{{.ModelNameLowercase}}s")
+		return c.JSON(fiber.Map{"redirectUrl": "/{{.ModelNameLowercase}}s"})
 	}
 }
 

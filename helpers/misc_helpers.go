@@ -38,3 +38,14 @@ func ToGoType(sqlType string) string {
 		return "string"
 	}
 }
+
+func GetHTMLInputType(goType string) string {
+	switch goType {
+	case "int", "int8", "int16", "int32", "int64", "uint", "uint8", "uint16", "uint32", "uint64", "float32", "float64":
+		return "number"
+	case "bool":
+		return "checkbox"
+	default:
+		return "text"
+	}
+}
