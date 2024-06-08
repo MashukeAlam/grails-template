@@ -259,7 +259,7 @@ func generateEditViewContent(tableName string, fields []Field) string {
             data.forEach((value, key) => { jsonData[key] = value });
 
             try {
-                const response = await fetch('/%ss/{{.ID}}', {
+                const response = await fetch('/%ss/{{%s.ID}}', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -280,7 +280,7 @@ func generateEditViewContent(tableName string, fields []Field) string {
             }
         });
     </script>
-    `, tableName, formFields.String(), tableName, tableName, tableName)
+    `, tableName, formFields.String(), tableName, tableName, strings.ToLower(tableName), tableName)
 }
 
 func generateDeleteViewContent(tableName string, fields []Field) string {
@@ -311,7 +311,7 @@ func generateDeleteViewContent(tableName string, fields []Field) string {
             }
 
             try {
-                const response = await fetch('/%ss/{{.ID}}', {
+                const response = await fetch('/%ss/{{%s.ID}}', {
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json'
@@ -331,7 +331,7 @@ func generateDeleteViewContent(tableName string, fields []Field) string {
             }
         });
     </script>
-    `, tableName, tableRows.String(), tableName, tableName, tableName)
+    `, tableName, tableRows.String(), tableName, tableName, strings.ToLower(tableName), tableName)
 }
 
 func generateHandlerFile(modelName string) {
