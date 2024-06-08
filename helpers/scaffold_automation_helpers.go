@@ -231,14 +231,32 @@ func generateShowViewContent(tableName string, fields []Field) string {
     <a href="/%ss">Back</a>
     `, tableName, tableRows.String(), tableName)
 }
-
 func generateEditViewContent(tableName string, fields []Field) string {
 	var formFields strings.Builder
+	var parseScript strings.Builder
+
 	for _, field := range fields {
+		fieldName := field.Name
+		fieldType := getHTMLInputType(field.Type)
+
 		formFields.WriteString(fmt.Sprintf(`
             <label for="%s">%s:</label>
-            <input type="text" id="%s" name="%s" value="{{%s.%s}}" required>
-        `, field.Name, field.Name, field.Name, field.Name, strings.ToLower(tableName), ToCamelCase(field.Name)))
+            <input type="%s" id="%s" name="%s" value="{{.%s.%s}}" required>
+        `, fieldName, fieldName, fieldType, fieldName, fieldName, strings.ToLower(tableName), ToCamelCase(fieldName)))
+
+		if fieldType == "number" {
+			parseScript.WriteString(fmt.Sprintf(`
+                if (!isNaN(value)) {
+                    jsonData[key] = parseInt(value, 10);
+                } else {
+                    jsonData[key] = value;
+                }
+            `))
+		} else {
+			parseScript.WriteString(`
+                jsonData[key] = value;
+            `)
+		}
 	}
 
 	fmt.Printf("%s%sGENERATED%s\tedit.html\n", Bold, Green, Reset)
@@ -256,10 +274,13 @@ func generateEditViewContent(tableName string, fields []Field) string {
             const form = event.target;
             const data = new FormData(form);
             const jsonData = {};
-            data.forEach((value, key) => { jsonData[key] = value });
+
+            data.forEach((value, key) => {
+                %s
+            });
 
             try {
-                const response = await fetch('/%ss/{{%s.ID}}', {
+                const response = await fetch('/%ss/{{.%s.ID}}', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json'
@@ -280,7 +301,7 @@ func generateEditViewContent(tableName string, fields []Field) string {
             }
         });
     </script>
-    `, tableName, formFields.String(), tableName, tableName, strings.ToLower(tableName), tableName)
+    `, tableName, formFields.String(), tableName, parseScript.String(), tableName, strings.ToLower(tableName), tableName)
 }
 
 func generateDeleteViewContent(tableName string, fields []Field) string {
