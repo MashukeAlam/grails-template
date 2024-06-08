@@ -25,7 +25,7 @@ func CreateModel(tableName string, fields []Field, reference ...string) {
 	appendMigrationCode(modelName)
 	fmt.Printf("%s%sGENERATING%s\thandlers\n", Bold, Yellow, Reset)
 	generateHandlerFile(modelName)
-	generateAndWriteViewFiles(tableName, fields)
+	generateAndWriteViewFiles(tableName, fields, reference...)
 	appendModelToJSON(modelName, fields)
 }
 
@@ -49,7 +49,7 @@ func appendModelToJSON(modelName string, fields []Field) {
 	if err != nil {
 		log.Fatalf("Failed to write models to JSON: %v", err)
 	}
-	fmt.Printf("%s%sUPDATE%s\tmodels.json\t\n", Bold, Yellow, Reset)
+	fmt.Printf("%s%sUPDATE%s\tmodels.json\n", Bold, Yellow, Reset)
 }
 
 func generateModelContent(modelName string, fields []Field, reference ...string) string {
@@ -69,7 +69,7 @@ func generateModelContent(modelName string, fields []Field, reference ...string)
 	}
 	modelBuilder.WriteString("}\n")
 
-	fmt.Printf("%s%sUPDATE%s\tmodels.go\t\n", Bold, Yellow, Reset)
+	fmt.Printf("%s%sUPDATE%s\tmodels.go\n", Bold, Yellow, Reset)
 
 	return modelBuilder.String()
 }
@@ -105,7 +105,7 @@ func Migrate(db *gorm.DB) {
 		contentStr := string(content)
 		contentStr = strings.TrimSuffix(contentStr, "}\n") + "\n" + migrationCode + "}\n"
 		writeToFile(migrationFileName, contentStr)
-		fmt.Printf("%s%sUPDATE%s\tmigrations.go\t\n", Bold, Yellow, Reset)
+		fmt.Printf("%s%sUPDATE%s\tmigrations.go\n", Bold, Yellow, Reset)
 	}
 }
 
@@ -131,7 +131,7 @@ func appendRoutesCode(codeToAdd string) error {
 	return ioutil.WriteFile(filePath, []byte(newContent), 0644)
 }
 
-func generateAndWriteViewFiles(tableName string, fields []Field) {
+func generateAndWriteViewFiles(tableName string, fields []Field, reference ...string) {
 	viewDirPlural := strings.ToLower(tableName) + "s"
 	viewDir := filepath.Join("views", viewDirPlural)
 
@@ -144,7 +144,7 @@ func generateAndWriteViewFiles(tableName string, fields []Field) {
 	indexViewFileName := filepath.Join(viewDir, "index.html")
 	writeToFile(indexViewFileName, indexViewContent)
 
-	insertViewContent := generateInsertViewContent(tableName, fields)
+	insertViewContent := generateInsertViewContent(tableName, fields, reference...)
 	insertViewFileName := filepath.Join(viewDir, "insert.html")
 	writeToFile(insertViewFileName, insertViewContent)
 
@@ -194,13 +194,25 @@ func generateIndexViewContent(tableName string, fields []Field) string {
     `, tableName, tableName, tableHeaders.String(), tableRows.String())
 }
 
-func generateInsertViewContent(tableName string, fields []Field) string {
+func generateInsertViewContent(tableName string, fields []Field, reference ...string) string {
 	var formFields strings.Builder
 	for _, field := range fields {
 		formFields.WriteString(fmt.Sprintf(`
             <label for="%s">%s:</label>
             <input type="%s" id="%s" name="%s" required>
         `, field.Name, field.Name, GetHTMLInputType(field.Type), field.Name, field.Name))
+	}
+	referenceTable := ""
+	if len(reference) > 0 {
+		referenceTable = ToCamelCase(reference[0])
+	}
+
+	if referenceTable != "" {
+		referenceField := ToCamelCase(referenceTable) + "ID"
+		formFields.WriteString(fmt.Sprintf(`
+            <label for="%s">%s ID:</label>
+            <input type="number" id="%s" name="%s" required>
+        `, referenceField, referenceTable, referenceField, referenceField))
 	}
 
 	fmt.Printf("%s%sGENERATED%s\tinsert.html\n", Bold, Green, Reset)
