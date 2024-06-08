@@ -237,20 +237,50 @@ func generateEditViewContent(tableName string, fields []Field) string {
 	for _, field := range fields {
 		formFields.WriteString(fmt.Sprintf(`
             <label for="%s">%s:</label>
-            <input type="text" id="%s" name="%s" value="{{.%s}}" required>
-        `, field.Name, field.Name, field.Name, field.Name, ToCamelCase(field.Name)))
+            <input type="text" id="%s" name="%s" value="{{%s.%s}}" required>
+        `, field.Name, field.Name, field.Name, field.Name, strings.ToLower(tableName), ToCamelCase(field.Name)))
 	}
 
 	fmt.Printf("%s%sGENERATED%s\tedit.html\n", Bold, Green, Reset)
 
 	return fmt.Sprintf(`
     <h2>Edit %s</h2>
-    <form action="/%ss/{{.ID}}" method="POST">
-        <input type="hidden" name="_method" value="PUT">
+    <form id="editForm">
         %s
         <button type="submit">Update %s</button>
     </form>
-    `, tableName, tableName, formFields.String(), tableName)
+
+    <script>
+        document.getElementById('editForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const form = event.target;
+            const data = new FormData(form);
+            const jsonData = {};
+            data.forEach((value, key) => { jsonData[key] = value });
+
+            try {
+                const response = await fetch('/%ss/{{.ID}}', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(jsonData)
+                });
+
+                if (response.ok) {
+                    alert('Update successful!');
+                    window.location.href = '/%ss';
+                } else {
+                    const errorData = await response.json();
+                    alert('Error: ' + errorData.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while updating.');
+            }
+        });
+    </script>
+    `, tableName, formFields.String(), tableName, tableName, tableName)
 }
 
 func generateDeleteViewContent(tableName string, fields []Field) string {
@@ -267,12 +297,41 @@ func generateDeleteViewContent(tableName string, fields []Field) string {
     <table>
         <tbody>%s</tbody>
     </table>
-    <form action="/%ss/{{.ID}}" method="POST">
-        <input type="hidden" name="_method" value="DELETE">
+    <form id="deleteForm">
         <button type="submit">Delete</button>
     </form>
     <a href="/%ss">Back</a>
-    `, tableName, tableRows.String(), tableName, tableName)
+
+    <script>
+        document.getElementById('deleteForm').addEventListener('submit', async function(event) {
+            event.preventDefault();
+
+            if (!confirm('Are you sure you want to delete this?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/%ss/{{.ID}}', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    alert('Delete successful!');
+                    window.location.href = '/%ss';
+                } else {
+                    const errorData = await response.json();
+                    alert('Error: ' + errorData.error);
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                alert('An error occurred while deleting.');
+            }
+        });
+    </script>
+    `, tableName, tableRows.String(), tableName, tableName, tableName)
 }
 
 func generateHandlerFile(modelName string) {
@@ -446,7 +505,7 @@ func Destroy{{.ModelName}}(db *gorm.DB) fiber.Handler {
 	%s.Put("/:id", handlers.Update%s(dbGorm))
 	%s.Get("/:id/delete", handlers.Delete%s(dbGorm))
 	%s.Delete("/:id", handlers.Destroy%s(dbGorm))
-`, strings.Title(modelName), modelName, modelName, modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName)
+`, strings.Title(modelName), modelName, modelName, modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, modelName)
 
 	if err := appendRoutesCode(routeRegistration); err != nil {
 		log.Fatalf("Failed to append routes code: %v", err)
