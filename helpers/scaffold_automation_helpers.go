@@ -254,6 +254,19 @@ func Create{{.ModelName}}(db *gorm.DB) fiber.Handler {
 	}
 }
 
+// Show{{.ModelName}} renders the details view for a specific {{.ModelName}}
+func Show{{.ModelName}}(db *gorm.DB) fiber.Handler {
+	return func(c *fiber.Ctx) error {
+		var {{.ModelNameLowercase}} models.{{.ModelName}}
+		if err := db.First(&{{.ModelNameLowercase}}, c.Params("id")).Error; err != nil {
+			return c.Status(fiber.StatusNotFound).JSON(fiber.Map{
+				"error": "{{.ModelName}} not found",
+			})
+		}
+		return c.Render("{{.ModelNameLowercase}}s/show", fiber.Map{"{{.ModelNameLowercase}}": {{.ModelNameLowercase}}, "Title": "Show Entry"}, "layouts/main")
+	}
+}
+
 // Edit{{.ModelName}} renders the edit form for a specific {{.ModelName}}
 func Edit{{.ModelName}}(db *gorm.DB) fiber.Handler {
 	return func(c *fiber.Ctx) error {
@@ -355,11 +368,12 @@ func Destroy{{.ModelName}}(db *gorm.DB) fiber.Handler {
 	%s.Get("/", handlers.Get%ss(dbGorm))
 	%s.Get("/insert", handlers.Insert%s())
 	%s.Post("/", handlers.Create%s(dbGorm))
+	%s.Get("/:id", handlers.Show%s(dbGorm))
 	%s.Get("/:id/edit", handlers.Edit%s(dbGorm))
 	%s.Put("/:id", handlers.Update%s(dbGorm))
 	%s.Get("/:id/delete", handlers.Delete%s(dbGorm))
 	%s.Delete("/:id", handlers.Destroy%s(dbGorm))
-`, strings.Title(modelName), modelName, modelName, modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, modelName)
+`, strings.Title(modelName), modelName, modelName, modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName, strings.Title(modelName), modelName)
 
 	if err := appendRoutesCode(routeRegistration); err != nil {
 		log.Fatalf("Failed to append routes code: %v", err)
