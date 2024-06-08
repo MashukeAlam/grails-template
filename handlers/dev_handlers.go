@@ -1,10 +1,10 @@
 package handlers
 
 import (
+	"github.com/MashukeAlam/grails-template/helpers"
 	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
-	"github.com/MashukeAlam/grails-template/helpers"
 )
 
 type ScaffoldData struct {
@@ -15,9 +15,15 @@ type ScaffoldData struct {
 
 func GetDevView() fiber.Handler {
 	return func(c *fiber.Ctx) error {
-
+		modelNames, err := helpers.GetModelNames()
+		if err != nil {
+			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+				"error": "Failed to read model names",
+			})
+		}
 		return c.Render("_dev/_dev_index", fiber.Map{
-			"Title": "Everything Center",
+			"Title":      "Everything Center",
+			"ModelNames": modelNames,
 		}, "layouts/main")
 	}
 }
@@ -44,9 +50,6 @@ func ProcessIncomingScaffoldData(db *gorm.DB) fiber.Handler {
 			})
 		}
 
-		// Print the received data
-		fmt.Printf("Table Name: %s\n", data.ScaffoldData.TableName)
-		fmt.Printf("Table Name: %s\n", data.ScaffoldData.RefTableName)
 		for _, field := range data.ScaffoldData.Fields {
 			fmt.Printf("Field Name: %s, Field Type: %s\n", field.Name, field.Type)
 		}
@@ -61,8 +64,8 @@ func ProcessIncomingScaffoldData(db *gorm.DB) fiber.Handler {
 			helpers.CreateModel(tableName, fields)
 		}
 		return c.JSON(fiber.Map{
-			"message": "Scaffold created successfully",
-			"action": "migrate",
+			"message":     "Scaffold created successfully",
+			"action":      "migrate",
 			"actionParam": data.ScaffoldData.TableName,
 		})
 	}

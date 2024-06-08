@@ -38,8 +38,13 @@
             <button type="button" @click="addField()">Add Field</button>
         </div>
         <div>
-            <label for="table_name">Reference Table Name:</label>
-            <input type="text" id="ref_table_name" x-model="refTableName">
+            <label for="ref_table_name">Choose a model:</label>
+            <select id="ref_table_name" x-model="refTableName">
+                <option value="" disabled selected>Select Reference Table</option>
+                {{range .ModelNames}}
+                    <option value="{{.}}">{{.}}</option>
+                {{end}}
+            </select>
         </div>
         <div>
             <button type="submit">Create Scaffold</button>
@@ -72,6 +77,8 @@
                     refTableName: this.refTableName
                 };
 
+                console.log(scaffoldData);
+
                 try {
                     const response = await fetch('/dev', {
                         method: 'POST',
@@ -92,7 +99,7 @@
                         const migrationDiv = document.getElementById("migration");
                         migrationDiv.innerHTML = `
                             <form action='/dev/migrate' method='GET'>
-                                <button type='submit'>Migrate ${result.actionParam}</button>    
+                                <button type='submit'>Migrate ${result.actionParam}</button>
                             </form>
                         `
                     }

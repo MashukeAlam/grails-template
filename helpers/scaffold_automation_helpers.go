@@ -26,6 +26,30 @@ func CreateModel(tableName string, fields []Field, reference ...string) {
 	fmt.Printf("%s%sGENERATING%s\thandlers\n", Bold, Yellow, Reset)
 	generateHandlerFile(modelName)
 	generateAndWriteViewFiles(tableName, fields)
+	appendModelToJSON(modelName, fields)
+}
+
+func appendModelToJSON(modelName string, fields []Field) {
+	models, err := ReadModelsFromJSON()
+	if err != nil {
+		log.Fatalf("Failed to read models from JSON: %v", err)
+	}
+
+	var modelFields []Field
+	for _, field := range fields {
+		modelFields = append(modelFields, Field{
+			Name: field.Name,
+			Type: field.Type,
+		})
+	}
+
+	models[modelName] = modelFields
+
+	err = WriteModelsToJSON(models)
+	if err != nil {
+		log.Fatalf("Failed to write models to JSON: %v", err)
+	}
+	fmt.Printf("%s%sUPDATE%s\tmodels.json\t\n", Bold, Yellow, Reset)
 }
 
 func generateModelContent(modelName string, fields []Field, reference ...string) string {
@@ -119,12 +143,10 @@ func generateAndWriteViewFiles(tableName string, fields []Field) {
 	indexViewContent := generateIndexViewContent(tableName, fields)
 	indexViewFileName := filepath.Join(viewDir, "index.html")
 	writeToFile(indexViewFileName, indexViewContent)
-	fmt.Printf("Index View file %s created successfully.\n", indexViewFileName)
 
 	insertViewContent := generateInsertViewContent(tableName, fields)
 	insertViewFileName := filepath.Join(viewDir, "insert.html")
 	writeToFile(insertViewFileName, insertViewContent)
-	fmt.Printf("Insert View file %s created successfully.\n", insertViewFileName)
 }
 
 func generateIndexViewContent(tableName string, fields []Field) string {
